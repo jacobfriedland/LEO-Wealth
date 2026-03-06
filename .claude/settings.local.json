@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"/c/Users/JacobFriedland/AppData/Local/Programs/Python/Python312/python.exe\" \"/c/Users/JacobFriedland/OneDrive - Leo Wealth/Claude/inspect.py\")",
+      "Bash(\"/c/Users/JacobFriedland/AppData/Local/Programs/Python/Python312/python.exe\" \"/c/Users/JacobFriedland/OneDrive - Leo Wealth/Claude/read_excel.py\")",
+      "Bash(\"/c/Users/JacobFriedland/AppData/Local/Programs/Python/Python312/python.exe\" \"/c/Users/JacobFriedland/OneDrive - Leo Wealth/Claude/match_weights.py\")"
+    ]
+  }
+}
