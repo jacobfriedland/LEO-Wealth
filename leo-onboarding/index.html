@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Investor Risk Profile | Leo Wealth</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f4f4f4;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #fff;
+      border-bottom: 3px solid #CC1824;
+      padding: 20px 24px;
+      text-align: center;
+    }
+    .logo { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+    .logo .leo    { color: #CC1824; }
+    .logo .sep    { color: #3C3C3C; margin: 0 3px; font-weight: 300; }
+    .logo .wealth { color: #3C3C3C; font-weight: 300; }
+    .header-sub   { color: #777; font-size: 0.85rem; margin-top: 4px; }
+
+    /* ── Sticky score bar ── */
+    .score-bar {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: #CC1824;
+      color: #fff;
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+    .score-bar .num { font-size: 1.4rem; font-weight: 700; }
+    .score-bar .profile-label { font-size: 0.8rem; opacity: 0.9; }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 780px;
+      margin: 28px auto;
+      padding: 0 16px 60px;
+    }
+
+    .intro-box {
+      background: #fff;
+      border-left: 4px solid #CC1824;
+      padding: 16px 20px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 0.875rem;
+      color: #555;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .card-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #CC1824;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    /* ── Form fields ── */
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.875rem;
+      margin-bottom: 5px;
+    }
+    .field input[type="text"],
+    .field input[type="email"],
+    .field input[type="date"],
+    .field textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: #333;
+      transition: border-color 0.15s;
+    }
+    .field input:focus, .field textarea:focus {
+      outline: none;
+      border-color: #CC1824;
+    }
+    .req { color: #CC1824; }
+
+    /* ── Question blocks ── */
+    .qblock {
+      margin-bottom: 26px;
+      padding-bottom: 26px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .qblock:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+    .q-num {
+      font-size: 0.7rem;
+      color: #CC1824;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+    }
+    .q-text {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #222;
+      margin-bottom: 12px;
+    }
+
+    /* ── Radio options ── */
+    .options { display: flex; flex-direction: column; gap: 7px; }
+    .opt {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .opt:hover { border-color: #CC1824; background: #fff8f8; }
+    .opt.selected { border-color: #CC1824; background: #fff0f0; }
+    .opt input[type="radio"] {
+      margin-top: 2px;
+      flex-shrink: 0;
+      accent-color: #CC1824;
+    }
+
+    /* ── Yes/No ── */
+    .yesno { display: flex; gap: 18px; margin-top: 8px; }
+    .yesno label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .yesno input { accent-color: #CC1824; }
+
+    .conditional {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: #fafafa;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      display: none;
+    }
+    .conditional.show { display: block; }
+    .conditional label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .conditional input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-family: inherit;
+    }
+    .check-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .check-list label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.875rem;
+      font-weight: 400;
+    }
+    .check-list input { accent-color: #CC1824; }
+
+    /* ── Result box ── */
+    .result-box {
+      border: 2px solid #CC1824;
+      border-radius: 6px;
+      padding: 18px;
+      text-align: center;
+      margin-bottom: 18px;
+      background: #fff8f8;
+    }
+    .result-profile { font-size: 1.4rem; font-weight: 700; color: #CC1824; }
+    .result-score   { color: #666; font-size: 0.875rem; margin-top: 3px; }
+
+    .profile-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.825rem;
+      margin-top: 14px;
+    }
+    .profile-table th {
+      background: #f5f5f5;
+      padding: 7px 10px;
+      text-align: left;
+      border: 1px solid #ddd;
+      font-weight: 600;
+    }
+    .profile-table td {
+      padding: 7px 10px;
+      border: 1px solid #ddd;
+    }
+    .profile-table tr.hl { background: #fff0f0; font-weight: 600; }
+
+    /* ── Signature ── */
+    .sig-wrap {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fff;
+      overflow: hidden;
+    }
+    canvas#sigCanvas {
+      display: block;
+      width: 100%;
+      height: 150px;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    .sig-clear {
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #666;
+      margin-top: 6px;
+    }
+    .sig-clear:hover { border-color: #CC1824; color: #CC1824; }
+
+    /* ── Checkbox ack ── */
+    .ack-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: #444;
+      cursor: pointer;
+    }
+    .ack-label input { margin-top: 2px; accent-color: #CC1824; flex-shrink: 0; }
+
+    /* ── Submit ── */
+    .btn-submit {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #CC1824;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: 0.4px;
+      margin-top: 20px;
+      transition: background 0.2s;
+    }
+    .btn-submit:hover { background: #a81520; }
+
+    /* ── Disclaimer ── */
+    .disclaimer {
+      font-size: 0.72rem;
+      color: #aaa;
+      line-height: 1.5;
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    @media (max-width: 560px) {
+      .card { padding: 16px; }
+      .score-bar { padding: 8px 16px; }
+      .profile-table th:nth-child(3),
+      .profile-table td:nth-child(3) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="header">
+  <div class="logo">
+    <span class="leo">LEO</span><span class="sep">|</span><span class="wealth">Wealth</span>
+  </div>
+  <div class="header-sub">Investor Risk Profile (IRP) &mdash; Confidential</div>
+</div>
+
+<!-- ── Sticky score bar ── -->
+<div class="score-bar">
+  <div>
+    <div style="font-size:0.75rem;opacity:0.85;">Current Score</div>
+    <div class="num" id="liveScore">0 / 65</div>
+  </div>
+  <div style="text-align:right;">
+    <div class="profile-label" id="liveProfile">Answer questions to see your profile</div>
+  </div>
+</div>
+
+<!-- ── Main container ── -->
+<div class="container">
+
+  <div class="intro-box">
+    <strong>Instructions:</strong> Complete all questions below. Your score updates in real time.
+    Once finished, review your risk profile, sign, and submit. You will receive a confirmation by email.
+  </div>
+
+  <form id="irpForm" action="https://formspree.io/f/myknjqyw" method="POST">
+
+    <!-- Hidden fields populated by JS -->
+    <input type="hidden" name="_subject"    value="New Investor Risk Profile — Leo Wealth">
+    <input type="hidden" name="total_score" id="hiddenScore"   value="0">
+    <input type="hidden" name="risk_profile" id="hiddenProfile" value="">
+    <input type="hidden" name="signature"   id="hiddenSig"     value="">
+
+    <!-- ══════════════════════════════════════════
+         PERSONAL INFORMATION
+    ══════════════════════════════════════════ -->
+    <div class="card">
+      <div class="card-title">Personal Information</div>
+
+      <div class="field">
+        <label for="fullName">Full Name <span class="req">*</span></label>
+        <input type="text" id="fullName" name="full_name" required placeholder="First and Last Name">
+      </div>
+
+      <div class="field">
+        <label for="clientEmail">Email Address <span class="req">*</span></label>
+        <input type="email" id="clientEmail" name="client_email" required placeholder="your@email.com">
+      </div>
+
+      <div class="field">
+        <label for="subDate">Date</label>
+        <input type="date" id="subDate" name="submission_date">
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         BACKGROUND
+    ══════════════════════════════════════════ -->
+    <div class="card">
+      <div class="card-title">Background</div>
+
+      <div class="qblock">
+        <div class="q-text">How long is your ideal time frame for the assets you are investing with us?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="time_frame" value="0–2 Years" required> 0–2 Years</label>
+          <label class="opt"><input type="radio" name="time_frame" value="3–5 Years"> 3–5 Years</label>
+          <label class="opt"><input type="radio" name="time_frame" value="6–10 Years"> 6–10 Years</label>
+          <label class="opt"><input type="radio" name="time_frame" value="10+ Years"> 10+ Years</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <div class="q-text">What percentage of your total assets is the amount you will be investing with us?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="asset_pct" value="0%–10%" required> 0%–10%</label>
+          <label class="opt"><input type="radio" name="asset_pct" value="11%–30%"> 11%–30%</label>
+          <label class="opt"><input type="radio" name="asset_pct" value="31%–50%"> 31%–50%</label>
+          <label class="opt"><input type="radio" name="asset_pct" value="51%–70%"> 51%–70%</label>
+          <label class="opt"><input type="radio" name="asset_pct" value="71%–100%"> 71%–100%</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         SCORED QUESTIONS
+    ══════════════════════════════════════════ -->
+    <div class="card">
+      <div class="card-title">Risk Assessment — Questions 1 to 13</div>
+      <p style="font-size:0.8rem;color:#888;margin-bottom:22px;">Each question is scored 1–5. Your total score determines your risk profile.</p>
+
+      <!-- Q1 -->
+      <div class="qblock">
+        <div class="q-num">Question 1</div>
+        <div class="q-text">Which of the following best describes your attitude towards financial risk?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q1" value="1" data-s required> I don't want to take investment risk</label>
+          <label class="opt"><input type="radio" name="q1" value="2" data-s> A low risk taker</label>
+          <label class="opt"><input type="radio" name="q1" value="3" data-s> A moderate risk taker</label>
+          <label class="opt"><input type="radio" name="q1" value="4" data-s> A high risk taker</label>
+          <label class="opt"><input type="radio" name="q1" value="5" data-s> A very high risk taker</label>
+        </div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="qblock">
+        <div class="q-num">Question 2</div>
+        <div class="q-text">I would be concerned if my investment portfolio fell during a year by:</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q2" value="1" data-s required> I would be concerned about any decline in value</label>
+          <label class="opt"><input type="radio" name="q2" value="2" data-s> 5% to 10%</label>
+          <label class="opt"><input type="radio" name="q2" value="3" data-s> 11% to 20%</label>
+          <label class="opt"><input type="radio" name="q2" value="4" data-s> 21% to 30%</label>
+          <label class="opt"><input type="radio" name="q2" value="5" data-s> More than 30%</label>
+        </div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="qblock">
+        <div class="q-num">Question 3</div>
+        <div class="q-text">I am willing to accept more risk to possibly achieve higher returns and reach my goals.</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q3" value="1" data-s required> Strongly Disagree</label>
+          <label class="opt"><input type="radio" name="q3" value="2" data-s> Disagree</label>
+          <label class="opt"><input type="radio" name="q3" value="3" data-s> Neutral</label>
+          <label class="opt"><input type="radio" name="q3" value="4" data-s> Agree</label>
+          <label class="opt"><input type="radio" name="q3" value="5" data-s> Strongly Agree</label>
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="qblock">
+        <div class="q-num">Question 4</div>
+        <div class="q-text">I am willing to experience market ups and downs for potential greater returns over time.</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q4" value="1" data-s required> Strongly Disagree</label>
+          <label class="opt"><input type="radio" name="q4" value="2" data-s> Disagree</label>
+          <label class="opt"><input type="radio" name="q4" value="3" data-s> Neutral</label>
+          <label class="opt"><input type="radio" name="q4" value="4" data-s> Agree</label>
+          <label class="opt"><input type="radio" name="q4" value="5" data-s> Strongly Agree</label>
+        </div>
+      </div>
+
+      <!-- Q5 -->
+      <div class="qblock">
+        <div class="q-num">Question 5</div>
+        <div class="q-text">Which statement best describes your understanding of financial markets and investments?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q5" value="1" data-s required> I am not at all familiar</label>
+          <label class="opt"><input type="radio" name="q5" value="2" data-s> I have had a little experience</label>
+          <label class="opt"><input type="radio" name="q5" value="3" data-s> I have had enough experience to understand that markets go up and down over time</label>
+          <label class="opt"><input type="radio" name="q5" value="4" data-s> I understand that markets may fluctuate significantly and that different asset classes offer differing amounts of risk and volatility</label>
+          <label class="opt"><input type="radio" name="q5" value="5" data-s> I am experienced with volatility across all asset classes and understand the various factors that influence performance</label>
+        </div>
+      </div>
+
+      <!-- Q6 -->
+      <div class="qblock">
+        <div class="q-num">Question 6</div>
+        <div class="q-text">My main concern is security. Keeping my money safe is more important than earning high returns.</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q6" value="1" data-s required> Strongly Agree</label>
+          <label class="opt"><input type="radio" name="q6" value="2" data-s> Agree</label>
+          <label class="opt"><input type="radio" name="q6" value="3" data-s> Neutral</label>
+          <label class="opt"><input type="radio" name="q6" value="4" data-s> Disagree</label>
+          <label class="opt"><input type="radio" name="q6" value="5" data-s> Strongly Disagree</label>
+        </div>
+      </div>
+
+      <!-- Q7 -->
+      <div class="qblock">
+        <div class="q-num">Question 7</div>
+        <div class="q-text">Investments with high volatility have generally compensated investors with higher returns over the long term. If you could invest with a time frame of 10+ years, which portfolio would most suit you?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q7" value="1" data-s required> A portfolio that never has a negative return</label>
+          <label class="opt"><input type="radio" name="q7" value="2" data-s> A portfolio that may have negative years, ranging between &minus;5% and +5% p.a.</label>
+          <label class="opt"><input type="radio" name="q7" value="3" data-s> A portfolio that will have negative years, ranging between &minus;12% and +12% p.a.</label>
+          <label class="opt"><input type="radio" name="q7" value="4" data-s> A portfolio that will have negative years, ranging between &minus;19% and +19% p.a.</label>
+          <label class="opt"><input type="radio" name="q7" value="5" data-s> A portfolio that will have negative years, ranging between &minus;28% and +28% p.a.</label>
+        </div>
+      </div>
+
+      <!-- Q8 -->
+      <div class="qblock">
+        <div class="q-num">Question 8</div>
+        <div class="q-text">When do you expect to start drawing income from this investment?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q8" value="1" data-s required> Immediately</label>
+          <label class="opt"><input type="radio" name="q8" value="2" data-s> Not now, but within 5 years</label>
+          <label class="opt"><input type="radio" name="q8" value="3" data-s> In 5 to 10 years</label>
+          <label class="opt"><input type="radio" name="q8" value="4" data-s> In 10 to 20 years</label>
+          <label class="opt"><input type="radio" name="q8" value="5" data-s> Not for at least 20 years</label>
+        </div>
+      </div>
+
+      <!-- Q9 -->
+      <div class="qblock">
+        <div class="q-num">Question 9</div>
+        <div class="q-text">What is your goal for this investment?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q9" value="1" data-s required> To avoid losing money</label>
+          <label class="opt"><input type="radio" name="q9" value="2" data-s> To generate income</label>
+          <label class="opt"><input type="radio" name="q9" value="3" data-s> To grow moderately</label>
+          <label class="opt"><input type="radio" name="q9" value="4" data-s> To grow significantly</label>
+          <label class="opt"><input type="radio" name="q9" value="5" data-s> To grow aggressively</label>
+        </div>
+      </div>
+
+      <!-- Q10 -->
+      <div class="qblock">
+        <div class="q-num">Question 10</div>
+        <div class="q-text">What level of loss over a 6-month period would make you want to sell your investments?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q10" value="1" data-s required> I would not want to see any losses</label>
+          <label class="opt"><input type="radio" name="q10" value="2" data-s> I would sell if I saw a 10% or more loss in the short term</label>
+          <label class="opt"><input type="radio" name="q10" value="3" data-s> I would sell if I saw a 20% or more loss in the short term</label>
+          <label class="opt"><input type="radio" name="q10" value="4" data-s> I would be uncomfortable with losses greater than 20% but would not sell in this period</label>
+          <label class="opt"><input type="radio" name="q10" value="5" data-s> I would not worry about a 6-month period — I would buy more rather than sell if markets fell significantly</label>
+        </div>
+      </div>
+
+      <!-- Q11 -->
+      <div class="qblock">
+        <div class="q-num">Question 11</div>
+        <div class="q-text">Suppose the stock market performs unusually poorly over the next decade. What would you expect from this investment?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q11" value="1" data-s required> To be little affected by what happens in the stock market</label>
+          <label class="opt"><input type="radio" name="q11" value="2" data-s> To make a modest profit</label>
+          <label class="opt"><input type="radio" name="q11" value="3" data-s> To make a little gain</label>
+          <label class="opt"><input type="radio" name="q11" value="4" data-s> To make very little or nothing</label>
+          <label class="opt"><input type="radio" name="q11" value="5" data-s> To lose money</label>
+        </div>
+      </div>
+
+      <!-- Q12 -->
+      <div class="qblock">
+        <div class="q-num">Question 12</div>
+        <div class="q-text">Which best describes your attitude about this investment's performance over the next three years?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q12" value="1" data-s required> I need to see at least a little return</label>
+          <label class="opt"><input type="radio" name="q12" value="2" data-s> I'd have a hard time tolerating any losses</label>
+          <label class="opt"><input type="radio" name="q12" value="3" data-s> I can tolerate a small loss</label>
+          <label class="opt"><input type="radio" name="q12" value="4" data-s> I can tolerate a loss</label>
+          <label class="opt"><input type="radio" name="q12" value="5" data-s> I don't mind if I lose money</label>
+        </div>
+      </div>
+
+      <!-- Q13 -->
+      <div class="qblock">
+        <div class="q-num">Question 13</div>
+        <div class="q-text">Which best describes your attitude about this investment's performance over the next three months?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q13" value="1" data-s required> I would not want to see any losses</label>
+          <label class="opt"><input type="radio" name="q13" value="2" data-s> I can only tolerate small short-term losses</label>
+          <label class="opt"><input type="radio" name="q13" value="3" data-s> If I suffered a loss greater than 10%, I would be concerned</label>
+          <label class="opt"><input type="radio" name="q13" value="4" data-s> If I suffered a loss greater than 20%, I would be concerned</label>
+          <label class="opt"><input type="radio" name="q13" value="5" data-s> I would not be concerned about losses in one quarter</label>
+        </div>
+      </div>
+
+    </div><!-- /scored questions card -->
+
+    <!-- ══════════════════════════════════════════
+         RISK PROFILE RESULT (live)
+    ══════════════════════════════════════════ -->
+    <div class="card">
+      <div class="card-title">Your Risk Profile</div>
+      <div class="result-box">
+        <div class="result-profile" id="resultProfile">Complete all 13 questions above</div>
+        <div class="result-score"  id="resultScore"></div>
+      </div>
+      <table class="profile-table">
+        <thead>
+          <tr>
+            <th>Score</th>
+            <th>Profile</th>
+            <th>Typical Horizon</th>
+            <th>Defensive Weighting</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="row-aggressive">  <td>48–65</td><td>Aggressive</td> <td>7+ years</td>  <td>0%–20%</td></tr>
+          <tr id="row-balanced">    <td>31–47</td><td>Balanced</td>   <td>5–7 years</td> <td>20%–50%</td></tr>
+          <tr id="row-moderate">    <td>20–30</td><td>Moderate</td>   <td>3–5 years</td> <td>30%–70%</td></tr>
+          <tr id="row-conservative"><td>≤ 19</td>  <td>Conservative</td><td>2–3 years</td><td>50%–100%</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:0.78rem;color:#888;margin-top:10px;">
+        This score is one of many factors your advisor will use. You and your advisor will make final decisions together.
+      </p>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         ADDITIONAL DISCLOSURES
+    ══════════════════════════════════════════ -->
+    <div class="card">
+      <div class="card-title">Additional Disclosures</div>
+
+      <!-- Leverage -->
+      <div class="qblock">
+        <div class="q-text">I/we have no restriction in using leverage in our investment strategies</div>
+        <div class="yesno">
+          <label><input type="radio" name="leverage" value="Yes" required> Yes</label>
+          <label><input type="radio" name="leverage" value="No"> No</label>
+        </div>
+      </div>
+
+      <!-- Listed director -->
+      <div class="qblock">
+        <div class="q-text">I am a director or executive of one or more listed companies</div>
+        <div class="yesno">
+          <label><input type="radio" name="listed_director" value="Yes" required
+            onchange="toggle('listed_director_detail', this.value)"> Yes</label>
+          <label><input type="radio" name="listed_director" value="No"
+            onchange="toggle('listed_director_detail', this.value)"> No</label>
+        </div>
+        <div class="conditional" id="listed_director_detail">
+          <label>Company name and stock exchange where it is listed:</label>
+          <input type="text" name="listed_company" placeholder="e.g. Acme Corp, NYSE">
+        </div>
+      </div>
+
+      <!-- SFC employee -->
+      <div class="qblock">
+        <div class="q-text">I am currently an employee of an SFC licensed corporation</div>
+        <div class="yesno">
+          <label><input type="radio" name="sfc_employee" value="Yes" required
+            onchange="toggle('sfc_detail', this.value)"> Yes</label>
+          <label><input type="radio" name="sfc_employee" value="No"
+            onchange="toggle('sfc_detail', this.value)"> No</label>
+        </div>
+        <div class="conditional" id="sfc_detail">
+          <label>Note: an authorization letter from your employer will be required to open this account.</label>
+        </div>
+      </div>
+
+      <!-- Family member -->
+      <div class="qblock">
+        <div class="q-text">I would like to have a family member involved in my investment discussions</div>
+        <div class="yesno">
+          <label><input type="radio" name="family_member" value="Yes" required
+            onchange="toggle('family_detail', this.value)"> Yes</label>
+          <label><input type="radio" name="family_member" value="No"
+            onchange="toggle('family_detail', this.value)"> No</label>
+        </div>
+        <div class="conditional" id="family_detail">
+          <label>Name and contact details:</label>
+          <input type="text" name="family_member_details" placeholder="Full name and phone or email">
+        </div>
+      </div>
+
+      <!-- Derivatives -->
+      <div class="qblock">
+        <div class="q-text">I have a detailed understanding of derivative products</div>
+        <div class="yesno">
+          <label><input type="radio" name="derivatives" value="Yes" required
+            onchange="toggle('deriv_detail', this.value)"> Yes</label>
+          <label><input type="radio" name="derivatives" value="No"
+            onchange="toggle('deriv_detail', this.value)"> No</label>
+        </div>
+        <div class="conditional" id="deriv_detail">
+          <label>How did you acquire this knowledge? (select all that apply)</label>
+          <div class="check-list">
+            <label><input type="checkbox" name="deriv_source" value="Finance degree or financial sector work"> Finance degree or financial sector work</label>
+            <label><input type="checkbox" name="deriv_source" value="Specific training on derivative products"> Specific training on derivative products</label>
+            <label><input type="checkbox" name="deriv_source" value="Prior trading experience in derivatives"> Prior trading experience in derivatives</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Virtual assets -->
+      <div class="qblock">
+        <div class="q-text">I have a proper understanding of the risks in investing in virtual assets</div>
+        <div class="yesno">
+          <label><input type="radio" name="virtual_assets" value="Yes" required
+            onchange="toggle('virtual_detail', this.value)"> Yes</label>
+          <label><input type="radio" name="virtual_assets" value="No"
+            onchange="toggle('virtual_detail', this.value)"> No</label>
+        </div>
+        <div class="conditional" id="virtual_detail">
+          <label>How did you acquire this knowledge? (select all that apply)</label>
+          <div class="check-list">
+            <label><input type="checkbox" name="virtual_source" value="Worked in the virtual asset sector"> Worked in the virtual asset sector</label>
+            <label><input type="checkbox" name="virtual_source" value="Specific training on virtual assets"> Specific training on virtual assets</label>
+            <label><input type="checkbox" name="virtual_source" value="Prior trading experience in virtual assets"> Prior trading experience in virtual assets</label>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /disclosures -->
+
+    <!-- ══════════════════════════════════════════
+         ACKNOWLEDGEMENT & SIGNATURE
+    ══════════════════════════════════════════ -->
+    <div class="card">
+      <div class="card-title">Client Acknowledgement &amp; Signature</div>
+
+      <div style="font-size:0.85rem;color:#555;line-height:1.75;margin-bottom:20px;">
+        <p>I/We understand that this document is part of our Agreement with the Company. This is one tool to help determine the investment allocation and the final investment allocation decision should be made considering a range of factors.</p>
+        <br>
+        <p>I/We confirm that the information contained within this Questionnaire is accurate and complete and that I/we have understood and answered all questions completely. I/We have had the opportunity to have any questions about this document answered.</p>
+        <br>
+        <p>I/We understand that it is our responsibility to promptly inform the Company in writing of any material changes to this document or to our personal needs and circumstances. I/We understand that failure to provide all significant and relevant information may result in inaccurate, unsuitable, or inappropriate advice.</p>
+      </div>
+
+      <div class="field">
+        <label class="ack-label">
+          <input type="checkbox" name="acknowledgement" id="ackBox" required>
+          <span>I confirm I have read, understood, and agree to the above acknowledgement. <span class="req">*</span></span>
+        </label>
+      </div>
+
+      <div class="field" style="margin-top:22px;">
+        <label style="font-weight:600;font-size:0.875rem;display:block;margin-bottom:6px;">
+          Signature <span class="req">*</span>
+        </label>
+        <p style="font-size:0.78rem;color:#999;margin-bottom:8px;">Draw your signature using your mouse or finger.</p>
+        <div class="sig-wrap">
+          <canvas id="sigCanvas"></canvas>
+        </div>
+        <button type="button" class="sig-clear" onclick="clearSig()">Clear</button>
+      </div>
+
+      <button type="submit" class="btn-submit">Submit Risk Profile</button>
+    </div>
+
+  </form>
+
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> Leo Wealth (the &ldquo;Company&rdquo;) — This questionnaire is confidential and intended solely for the named client. It is not an offering of any financial product or a guarantee of capital preservation or future returns. In the United States, securities are offered through Leo Brokerage, LLC, Member FINRA/MSRB. Investment Advisory services are offered through Leo Wealth, LLC, and Leo Fund Services, LLC. In Hong Kong, Leo Capital Corp (Hong Kong) Limited, CE No. BIH055, is licensed by the SFC. In Singapore, Leo Wealth Singapore Pte. Ltd., CMS 100591-1, is regulated by the MAS. Investment involves risks, including the loss of principal.
+  </div>
+
+</div><!-- /container -->
+
+<!-- ── Signature Pad library ── -->
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+
+<script>
+  // ── Set today's date ────────────────────────────────────────────
+  document.getElementById('subDate').value = new Date().toISOString().split('T')[0];
+
+  // ── Signature pad ───────────────────────────────────────────────
+  const canvas = document.getElementById('sigCanvas');
+  const sigPad = new SignaturePad(canvas, {
+    backgroundColor: 'rgb(255,255,255)',
+    penColor: '#111'
+  });
+
+  function resizeCanvas() {
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    const w = canvas.offsetWidth;
+    const h = canvas.offsetHeight;
+    canvas.width  = w * ratio;
+    canvas.height = h * ratio;
+    canvas.getContext('2d').scale(ratio, ratio);
+    sigPad.clear();
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function clearSig() { sigPad.clear(); }
+
+  // ── Scoring ─────────────────────────────────────────────────────
+  const SCORED = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13'];
+
+  function getProfile(score) {
+    if (score >= 48) return 'Aggressive';
+    if (score >= 31) return 'Balanced';
+    if (score >= 20) return 'Moderate';
+    return 'Conservative';
+  }
+
+  function updateScore() {
+    let total = 0, answered = 0;
+    SCORED.forEach(name => {
+      const sel = document.querySelector(`input[name="${name}"]:checked`);
+      if (sel) { total += parseInt(sel.value); answered++; }
+    });
+
+    document.getElementById('liveScore').textContent = total + ' / 65';
+
+    if (answered === 13) {
+      const p = getProfile(total);
+      document.getElementById('liveProfile').textContent   = p + ' Investor';
+      document.getElementById('resultProfile').textContent = p + ' Investor';
+      document.getElementById('resultScore').textContent   = 'Score: ' + total + ' out of 65';
+      document.getElementById('hiddenScore').value   = total;
+      document.getElementById('hiddenProfile').value = p;
+      ['aggressive','balanced','moderate','conservative'].forEach(id =>
+        document.getElementById('row-' + id).classList.remove('hl')
+      );
+      document.getElementById('row-' + p.toLowerCase()).classList.add('hl');
+    } else {
+      document.getElementById('liveProfile').textContent   = answered + ' of 13 answered';
+      document.getElementById('resultProfile').textContent = 'Complete all 13 questions above';
+      document.getElementById('resultScore').textContent   = '';
+    }
+
+    // Highlight selected options
+    document.querySelectorAll('.opt').forEach(label => {
+      const inp = label.querySelector('input[type="radio"]');
+      label.classList.toggle('selected', !!(inp && inp.checked));
+    });
+  }
+
+  document.querySelectorAll('input[data-s]').forEach(i => i.addEventListener('change', updateScore));
+
+  // Also highlight background question options
+  document.querySelectorAll('.opt input[type="radio"]:not([data-s])').forEach(i => {
+    i.addEventListener('change', () => {
+      document.querySelectorAll('.opt').forEach(label => {
+        const inp = label.querySelector('input[type="radio"]');
+        label.classList.toggle('selected', !!(inp && inp.checked));
+      });
+    });
+  });
+
+  // ── Conditional fields ──────────────────────────────────────────
+  function toggle(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('show', value === 'Yes');
+  }
+
+  // ── Form submit ─────────────────────────────────────────────────
+  document.getElementById('irpForm').addEventListener('submit', function(e) {
+    if (sigPad.isEmpty()) {
+      e.preventDefault();
+      alert('Please provide your signature before submitting.');
+      return;
+    }
+    document.getElementById('hiddenSig').value = sigPad.toDataURL();
+  });
+</script>
+
+</body>
+</html>
