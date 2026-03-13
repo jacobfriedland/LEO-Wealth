@@ -1,0 +1,5 @@
+{
+  "claude.display": "panel",
+  "terminal.integrated.defaultProfile.windows": "Git Bash",
+  "workbench.editor.enablePreview": false
+}
