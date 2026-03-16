@@ -207,13 +207,18 @@
       `<tr><td style="font-weight:600;width:40%;">Q${i+1} — ${Q_LABELS[i]}</td><td>${submission[`${prefix}_${q}`] || '—'}</td></tr>`
     ).join('');
 
+    const s = submission;
+    const dirVal  = s[`${prefix}_director`]    === 'Yes' ? `Yes — ${s[`${prefix}_listed_company`]  || ''}` : (s[`${prefix}_director`]    || '—');
+    const famVal  = s[`${prefix}_family`]      === 'Yes' ? `Yes — ${s[`${prefix}_family_details`]  || ''}` : (s[`${prefix}_family`]      || '—');
+    const derivVal= s[`${prefix}_derivatives`] === 'Yes' ? `Yes — ${s[`${prefix}_deriv_source`]    || ''}` : (s[`${prefix}_derivatives`] || '—');
+    const virtVal = s[`${prefix}_virtual`]     === 'Yes' ? `Yes — ${s[`${prefix}_virtual_source`]  || ''}` : (s[`${prefix}_virtual`]     || '—');
     const disclosures = `
-      ${field('Leverage restriction', submission[`${prefix}_leverage`])}
-      ${field('Listed company director', submission[`${prefix}_director`])}
-      ${field('SFC employee', submission[`${prefix}_sfc`])}
-      ${field('Family member involved', submission[`${prefix}_family`])}
-      ${field('Derivatives knowledge', submission[`${prefix}_derivatives`])}
-      ${field('Virtual assets knowledge', submission[`${prefix}_virtual`])}
+      ${field('Leverage restriction',    s[`${prefix}_leverage`] || '—')}
+      ${field('Listed company director', dirVal)}
+      ${field('SFC employee',            s[`${prefix}_sfc`]      || '—')}
+      ${field('Family member involved',  famVal)}
+      ${field('Derivatives knowledge',   derivVal)}
+      ${field('Virtual assets knowledge',virtVal)}
     `;
 
     return `
