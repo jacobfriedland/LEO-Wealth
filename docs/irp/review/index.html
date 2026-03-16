@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IRP Review &amp; Sign | Leo Wealth</title>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -148,6 +149,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 <script>
   const SUPABASE_URL = 'https://bjrahksuzmeuprtymtiz.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_u1cm2PemdpPChiAidzFbJw_RFKHDCn7';
@@ -351,15 +353,49 @@
         doc.setTextColor(51, 51, 51);
       }
 
-      function row(label, value, indent = 0) {
-        checkPage(8);
-        doc.setFontSize(9);
+      // Helper: small two-column info table (label | value)
+      function infoTable(rows) {
+        doc.autoTable({
+          startY: y,
+          margin: { left: ml, right: mr },
+          tableWidth: cw,
+          styles: { fontSize: 9, cellPadding: 2.5, lineColor: [220,220,220], lineWidth: 0.2 },
+          headStyles: { fillColor: [245,245,245], textColor: [80,80,80], fontStyle: 'bold', fontSize: 8 },
+          columnStyles: {
+            0: { fontStyle: 'bold', cellWidth: 55, fillColor: [250,250,250] },
+            1: { cellWidth: cw - 55 }
+          },
+          body: rows,
+          theme: 'grid'
+        });
+        y = doc.lastAutoTable.finalY + 4;
+      }
+
+      // Helper: question/answer table
+      function qaTable(rows) {
+        doc.autoTable({
+          startY: y,
+          margin: { left: ml, right: mr },
+          tableWidth: cw,
+          styles: { fontSize: 8.5, cellPadding: 2.5, lineColor: [220,220,220], lineWidth: 0.2 },
+          columnStyles: {
+            0: { fontStyle: 'bold', cellWidth: 75, fillColor: [250,250,250] },
+            1: { cellWidth: cw - 75 }
+          },
+          body: rows,
+          theme: 'grid'
+        });
+        y = doc.lastAutoTable.finalY + 4;
+      }
+
+      function sectionLabel(text) {
+        checkPage(10);
+        doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
-        doc.text(label + ':', ml + indent, y);
-        doc.setFont('helvetica', 'normal');
-        const lines = doc.splitTextToSize(String(value || '—'), cw - 60);
-        doc.text(lines, ml + indent + 55, y);
-        y += lines.length * 5 + 2;
+        doc.setTextColor(204, 24, 36);
+        doc.text(text, ml, y);
+        doc.setTextColor(51, 51, 51);
+        y += 4;
       }
 
       // ── Header ──
@@ -377,109 +413,47 @@
 
       // ── Summary ──
       heading('Submission Details');
-      row('Date', d.submission_date);
-      row('Advisor', d.advisor_email);
-      row('Status', 'Signed');
-      y += 4;
+      infoTable([
+        ['Date', d.submission_date || '—'],
+        ['Advisor', d.advisor_email || '—'],
+        ['Status', 'Signed']
+      ]);
 
-      // ── Client 1 ──
-      heading('Client 1 — ' + (d.client1_name || ''));
-      row('Risk Profile', (d.client1_profile || '—') + ' Investor');
-      row('Total Score', (d.client1_score || '—') + ' / 65');
-      row('Time Frame', d.client1_time_frame);
-      row('% of Total Assets', d.client1_asset_pct);
-      y += 2;
+      // ── Client section helper ──
+      function clientBlock(prefix, clientName, score, profile, timeFrame, assetPct, sigData) {
+        heading(clientName);
+        infoTable([
+          ['Risk Profile', (profile || '—') + ' Investor'],
+          ['Total Score', (score || '—') + ' / 65'],
+          ['Time Frame', timeFrame || '—'],
+          ['% of Total Assets', assetPct || '—']
+        ]);
 
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(204, 24, 36);
-      doc.text('RISK ASSESSMENT ANSWERS', ml, y);
-      doc.setTextColor(51, 51, 51);
-      y += 6;
+        sectionLabel('RISK ASSESSMENT ANSWERS');
+        qaTable(QS.map((q, i) => [`Q${i+1} — ${Q_LABELS[i]}`, submission[`${prefix}_${q}`] || '—']));
 
-      QS.forEach((q, i) => {
-        row(`Q${i+1} — ${Q_LABELS[i]}`, d[`c1_${q}`]);
-      });
-      y += 2;
+        sectionLabel('DISCLOSURES');
+        infoTable([
+          ['Leverage restriction',      submission[`${prefix}_leverage`]    || '—'],
+          ['Listed company director',   submission[`${prefix}_director`]   || '—'],
+          ['SFC employee',              submission[`${prefix}_sfc`]        || '—'],
+          ['Family member involved',    submission[`${prefix}_family`]     || '—'],
+          ['Derivatives knowledge',     submission[`${prefix}_derivatives`]|| '—'],
+          ['Virtual assets knowledge',  submission[`${prefix}_virtual`]    || '—']
+        ]);
 
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(204, 24, 36);
-      doc.text('DISCLOSURES', ml, y);
-      doc.setTextColor(51, 51, 51);
-      y += 6;
-
-      row('Leverage restriction', d.c1_leverage);
-      row('Listed company director', d.c1_director);
-      row('SFC employee', d.c1_sfc);
-      row('Family member involved', d.c1_family);
-      row('Derivatives knowledge', d.c1_derivatives);
-      row('Virtual assets knowledge', d.c1_virtual);
-      y += 4;
-
-      // C1 Signature
-      if (d.c1_signature) {
-        checkPage(35);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(204, 24, 36);
-        doc.text('CLIENT 1 SIGNATURE', ml, y);
-        doc.setTextColor(51, 51, 51);
-        y += 4;
-        try {
-          doc.addImage(d.c1_signature, 'PNG', ml, y, 70, 22);
-        } catch(e) {}
-        y += 26;
-      }
-
-      // ── Client 2 (if present) ──
-      if (d.client2_name) {
-        checkPage(20);
-        heading('Client 2 — ' + d.client2_name);
-        row('Risk Profile', (d.client2_profile || '—') + ' Investor');
-        row('Total Score', (d.client2_score || '—') + ' / 65');
-        row('Time Frame', d.client2_time_frame);
-        row('% of Total Assets', d.client2_asset_pct);
-        y += 2;
-
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(204, 24, 36);
-        doc.text('RISK ASSESSMENT ANSWERS', ml, y);
-        doc.setTextColor(51, 51, 51);
-        y += 6;
-
-        QS.forEach((q, i) => {
-          row(`Q${i+1} — ${Q_LABELS[i]}`, d[`c2_${q}`]);
-        });
-        y += 2;
-
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(204, 24, 36);
-        doc.text('DISCLOSURES', ml, y);
-        doc.setTextColor(51, 51, 51);
-        y += 6;
-
-        row('Leverage restriction', d.c2_leverage);
-        row('Listed company director', d.c2_director);
-        row('SFC employee', d.c2_sfc);
-        row('Family member involved', d.c2_family);
-        row('Derivatives knowledge', d.c2_derivatives);
-        row('Virtual assets knowledge', d.c2_virtual);
-        y += 4;
-
-        if (d.c2_signature) {
+        if (sigData) {
           checkPage(35);
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(204, 24, 36);
-          doc.text('CLIENT 2 SIGNATURE', ml, y);
-          doc.setTextColor(51, 51, 51);
-          y += 4;
-          try { doc.addImage(d.c2_signature, 'PNG', ml, y, 70, 22); } catch(e) {}
+          sectionLabel(prefix.toUpperCase() + ' SIGNATURE');
+          try { doc.addImage(sigData, 'PNG', ml, y, 70, 22); } catch(e) {}
           y += 26;
         }
+      }
+
+      clientBlock('c1', 'Client 1 — ' + (d.client1_name || ''), d.client1_score, d.client1_profile, d.client1_time_frame, d.client1_asset_pct, d.c1_signature);
+
+      if (d.client2_name) {
+        clientBlock('c2', 'Client 2 — ' + d.client2_name, d.client2_score, d.client2_profile, d.client2_time_frame, d.client2_asset_pct, d.c2_signature);
       }
 
       // ── Advisor Signature ──
@@ -487,6 +461,7 @@
       heading('Advisor Signature');
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
+      doc.setTextColor(51, 51, 51);
       doc.text('I confirm I have reviewed this Investor Risk Profile with the client(s) named above.', ml, y);
       y += 8;
       try { doc.addImage(advisorSigData, 'PNG', ml, y, 80, 26); } catch(e) {}
