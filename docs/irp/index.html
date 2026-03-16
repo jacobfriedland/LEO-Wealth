@@ -672,7 +672,7 @@
       const submissionId = sbData[0]?.id || 'unknown';
       const reviewLink = `https://jacobfriedland.github.io/LEO-Wealth/irp/review/?id=${submissionId}`;
 
-      const client2Line = client2Active ? data.client2_name : '';
+      const client2Line = client2Active ? `\nClient 2: ${data.client2_name}` : '';
       await emailjs.send('service_hg3i0ik', 'template_qv7x5rc', {
         advisor_email: advisorEmail,
         submission_date: data.submission_date,
