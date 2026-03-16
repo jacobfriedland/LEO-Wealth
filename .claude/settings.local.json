@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp \"c:/Users/JacobFriedland/OneDrive - Leo Wealth/Claude/leo-onboarding/investor risk profile.docx\" \"c:/Users/JacobFriedland/AppData/Local/Temp/risk_profile.docx\")",
+      "Bash(python -c \":*)",
+      "Bash(mkdir -p docs/irp)",
+      "Bash(cp leo-onboarding/index.html docs/irp/index.html)"
+    ]
+  }
+}
