@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IRP Review &amp; Sign | Leo Wealth</title>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f4f4f4;
+      color: #333;
+      line-height: 1.6;
+    }
+    .header {
+      background: #fff;
+      border-bottom: 3px solid #CC1824;
+      padding: 18px 24px;
+      text-align: center;
+    }
+    .logo { font-size: 1.8rem; font-weight: 700; }
+    .logo .leo    { color: #CC1824; }
+    .logo .sep    { color: #3C3C3C; margin: 0 3px; font-weight: 300; }
+    .logo .wealth { color: #3C3C3C; font-weight: 300; }
+    .header-sub   { color: #777; font-size: 0.85rem; margin-top: 4px; }
+
+    .container { max-width: 780px; margin: 28px auto; padding: 0 16px 60px; }
+
+    .card {
+      background: #fff;
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .card-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #CC1824;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .client-banner {
+      background: #CC1824;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 6px 6px 0 0;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: -2px;
+    }
+
+    .profile-badge {
+      display: inline-block;
+      background: #CC1824;
+      color: #fff;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      margin-bottom: 10px;
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 12px;
+    }
+    .data-table th {
+      background: #f5f5f5;
+      padding: 7px 10px;
+      text-align: left;
+      border: 1px solid #ddd;
+      font-weight: 600;
+    }
+    .data-table td {
+      padding: 7px 10px;
+      border: 1px solid #ddd;
+      vertical-align: top;
+    }
+    .data-table tr:nth-child(even) td { background: #fafafa; }
+
+    .sig-wrap { border: 1px solid #ddd; border-radius: 4px; background: #fff; overflow: hidden; margin-top: 8px; }
+    canvas#advisorSigCanvas { display: block; width: 100%; height: 160px; cursor: crosshair; touch-action: none; }
+    .sig-clear {
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #666;
+      margin-top: 6px;
+    }
+    .sig-clear:hover { border-color: #CC1824; color: #CC1824; }
+
+    .btn-pdf {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #CC1824;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: 0.4px;
+      transition: background 0.2s;
+    }
+    .btn-pdf:hover { background: #a81520; }
+    .btn-pdf:disabled { background: #999; cursor: not-allowed; }
+
+    .loading { text-align: center; padding: 60px 20px; color: #888; font-size: 0.9rem; }
+    .error   { text-align: center; padding: 40px 20px; color: #CC1824; font-size: 0.9rem; }
+
+    .sig-img { max-width: 220px; border: 1px solid #eee; border-radius: 4px; margin-top: 6px; }
+
+    .info-row { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 14px; }
+    .info-item { flex: 1; min-width: 160px; }
+    .info-item .label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
+    .info-item .value { font-weight: 600; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <span class="leo">LEO</span><span class="sep">|</span><span class="wealth">Wealth</span>
+  </div>
+  <div class="header-sub">Investor Risk Profile — Advisor Review &amp; Sign</div>
+</div>
+
+<div class="container">
+  <div id="content">
+    <div class="loading">Loading submission&hellip;</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script>
+  const SUPABASE_URL = 'https://bjrahksuzmeuprtymtiz.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_u1cm2PemdpPChiAidzFbJw_RFKHDCn7';
+
+  const QS = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13'];
+  const Q_LABELS = [
+    'Attitude to financial risk',
+    'Portfolio decline tolerance',
+    'Willingness to accept risk for returns',
+    'Willingness to experience market ups/downs',
+    'Understanding of financial markets',
+    'Security vs. returns priority',
+    'Preferred portfolio volatility range',
+    'When to start drawing income',
+    'Investment goal',
+    'Loss tolerance over 6 months',
+    'Expectation in poor market decade',
+    '3-year performance attitude',
+    '3-month performance attitude'
+  ];
+
+  let submission = null;
+  let advisorSigPad = null;
+
+  async function loadSubmission() {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (!id) {
+      document.getElementById('content').innerHTML = '<div class="error">No submission ID provided.</div>';
+      return;
+    }
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/irp_submissions?id=eq.${id}&select=*`, {
+        headers: {
+          'apikey':        SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY
+        }
+      });
+      const data = await res.json();
+      if (!data || data.length === 0) throw new Error('Submission not found.');
+      submission = data[0];
+      renderPage();
+    } catch (err) {
+      document.getElementById('content').innerHTML = `<div class="error">Error loading submission: ${err.message}</div>`;
+    }
+  }
+
+  function field(label, value) {
+    return `<tr><td style="width:40%;font-weight:600;">${label}</td><td>${value || '—'}</td></tr>`;
+  }
+
+  function clientSection(prefix, name, score, profile, timeFrame, assetPct, sigData) {
+    const rows = QS.map((q, i) =>
+      `<tr><td style="font-weight:600;width:40%;">Q${i+1} — ${Q_LABELS[i]}</td><td>${submission[`${prefix}_${q}`] || '—'}</td></tr>`
+    ).join('');
+
+    const disclosures = `
+      ${field('Leverage restriction', submission[`${prefix}_leverage`])}
+      ${field('Listed company director', submission[`${prefix}_director`])}
+      ${field('SFC employee', submission[`${prefix}_sfc`])}
+      ${field('Family member involved', submission[`${prefix}_family`])}
+      ${field('Derivatives knowledge', submission[`${prefix}_derivatives`])}
+      ${field('Virtual assets knowledge', submission[`${prefix}_virtual`])}
+    `;
+
+    return `
+      <div class="client-banner">${name}</div>
+      <div class="card">
+        <div class="info-row">
+          <div class="info-item">
+            <div class="label">Risk Profile</div>
+            <div class="value"><span class="profile-badge">${profile || '—'} Investor</span></div>
+          </div>
+          <div class="info-item">
+            <div class="label">Total Score</div>
+            <div class="value">${score || '—'} / 65</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Time Frame</div>
+            <div class="value">${timeFrame || '—'}</div>
+          </div>
+          <div class="info-item">
+            <div class="label">% of Total Assets</div>
+            <div class="value">${assetPct || '—'}</div>
+          </div>
+        </div>
+
+        <div class="card-title" style="margin-top:12px;">Risk Assessment Answers</div>
+        <table class="data-table"><tbody>${rows}</tbody></table>
+
+        <div class="card-title" style="margin-top:20px;">Disclosures</div>
+        <table class="data-table"><tbody>${disclosures}</tbody></table>
+
+        <div class="card-title" style="margin-top:20px;">Client Signature</div>
+        ${sigData ? `<img class="sig-img" src="${sigData}" alt="Client signature">` : '<p style="color:#888;font-size:0.85rem;">No signature on file.</p>'}
+      </div>
+    `;
+  }
+
+  function renderPage() {
+    const d = submission;
+    const hasC2 = !!(d.client2_name);
+
+    let html = `
+      <div class="card">
+        <div class="card-title">Submission Details</div>
+        <div class="info-row">
+          <div class="info-item">
+            <div class="label">Submission Date</div>
+            <div class="value">${d.submission_date || '—'}</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Advisor</div>
+            <div class="value">${d.advisor_email || '—'}</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Status</div>
+            <div class="value">${d.status || 'pending'}</div>
+          </div>
+        </div>
+      </div>
+
+      ${clientSection('c1', 'Client 1 — ' + (d.client1_name || ''), d.client1_score, d.client1_profile, d.client1_time_frame, d.client1_asset_pct, d.c1_signature)}
+      ${hasC2 ? clientSection('c2', 'Client 2 — ' + (d.client2_name || ''), d.client2_score, d.client2_profile, d.client2_time_frame, d.client2_asset_pct, d.c2_signature) : ''}
+
+      <div class="card">
+        <div class="card-title">Advisor Signature</div>
+        <p style="font-size:0.85rem;color:#555;margin-bottom:12px;">
+          By signing below, you confirm you have reviewed this Investor Risk Profile and discussed it with the client(s).
+        </p>
+        <div class="sig-wrap">
+          <canvas id="advisorSigCanvas"></canvas>
+        </div>
+        <button type="button" class="sig-clear" onclick="advisorSigPad.clear()">Clear</button>
+      </div>
+
+      <div class="card">
+        <button class="btn-pdf" id="pdfBtn" onclick="generatePDF()">Sign &amp; Download PDF</button>
+      </div>
+    `;
+
+    document.getElementById('content').innerHTML = html;
+
+    // Init advisor signature pad
+    const canvas = document.getElementById('advisorSigCanvas');
+    advisorSigPad = new SignaturePad(canvas, { backgroundColor: 'rgb(255,255,255)', penColor: '#111' });
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    canvas.width  = canvas.offsetWidth  * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    canvas.getContext('2d').scale(ratio, ratio);
+    advisorSigPad.clear();
+  }
+
+  async function generatePDF() {
+    if (advisorSigPad.isEmpty()) {
+      alert('Please provide your advisor signature before generating the PDF.');
+      return;
+    }
+
+    const btn = document.getElementById('pdfBtn');
+    btn.textContent = 'Generating PDF…';
+    btn.disabled = true;
+
+    try {
+      // Save advisor signature to Supabase
+      const advisorSigData = advisorSigPad.toDataURL();
+      await fetch(`${SUPABASE_URL}/rest/v1/irp_submissions?id=eq.${submission.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type':  'application/json',
+          'apikey':        SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY
+        },
+        body: JSON.stringify({ advisor_signature: advisorSigData, status: 'signed' })
+      });
+
+      // Generate PDF
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const d   = submission;
+      const pw  = 210, ph = 297, ml = 20, mr = 20, mt = 20;
+      const cw  = pw - ml - mr;
+      let y     = mt;
+
+      function checkPage(needed = 10) {
+        if (y + needed > ph - 15) { doc.addPage(); y = mt; }
+      }
+
+      function heading(text, size = 11, color = [204, 24, 36]) {
+        checkPage(12);
+        doc.setFontSize(size);
+        doc.setTextColor(...color);
+        doc.setFont('helvetica', 'bold');
+        doc.text(text, ml, y);
+        y += size * 0.5;
+        doc.setDrawColor(204, 24, 36);
+        doc.setLineWidth(0.3);
+        doc.line(ml, y, pw - mr, y);
+        y += 5;
+        doc.setTextColor(51, 51, 51);
+      }
+
+      function row(label, value, indent = 0) {
+        checkPage(8);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text(label + ':', ml + indent, y);
+        doc.setFont('helvetica', 'normal');
+        const lines = doc.splitTextToSize(String(value || '—'), cw - 60);
+        doc.text(lines, ml + indent + 55, y);
+        y += lines.length * 5 + 2;
+      }
+
+      // ── Header ──
+      doc.setFillColor(204, 24, 36);
+      doc.rect(0, 0, pw, 22, 'F');
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(255, 255, 255);
+      doc.text('LEO', ml, 14);
+      doc.setFont('helvetica', 'normal');
+      doc.text(' | Wealth', ml + 18, 14);
+      doc.setFontSize(9);
+      doc.text('Investor Risk Profile (IRP) — Confidential', pw - mr, 14, { align: 'right' });
+      y = 32;
+
+      // ── Summary ──
+      heading('Submission Details');
+      row('Date', d.submission_date);
+      row('Advisor', d.advisor_email);
+      row('Status', 'Signed');
+      y += 4;
+
+      // ── Client 1 ──
+      heading('Client 1 — ' + (d.client1_name || ''));
+      row('Risk Profile', (d.client1_profile || '—') + ' Investor');
+      row('Total Score', (d.client1_score || '—') + ' / 65');
+      row('Time Frame', d.client1_time_frame);
+      row('% of Total Assets', d.client1_asset_pct);
+      y += 2;
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(204, 24, 36);
+      doc.text('RISK ASSESSMENT ANSWERS', ml, y);
+      doc.setTextColor(51, 51, 51);
+      y += 6;
+
+      QS.forEach((q, i) => {
+        row(`Q${i+1} — ${Q_LABELS[i]}`, d[`c1_${q}`]);
+      });
+      y += 2;
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(204, 24, 36);
+      doc.text('DISCLOSURES', ml, y);
+      doc.setTextColor(51, 51, 51);
+      y += 6;
+
+      row('Leverage restriction', d.c1_leverage);
+      row('Listed company director', d.c1_director);
+      row('SFC employee', d.c1_sfc);
+      row('Family member involved', d.c1_family);
+      row('Derivatives knowledge', d.c1_derivatives);
+      row('Virtual assets knowledge', d.c1_virtual);
+      y += 4;
+
+      // C1 Signature
+      if (d.c1_signature) {
+        checkPage(35);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(204, 24, 36);
+        doc.text('CLIENT 1 SIGNATURE', ml, y);
+        doc.setTextColor(51, 51, 51);
+        y += 4;
+        try {
+          doc.addImage(d.c1_signature, 'PNG', ml, y, 70, 22);
+        } catch(e) {}
+        y += 26;
+      }
+
+      // ── Client 2 (if present) ──
+      if (d.client2_name) {
+        checkPage(20);
+        heading('Client 2 — ' + d.client2_name);
+        row('Risk Profile', (d.client2_profile || '—') + ' Investor');
+        row('Total Score', (d.client2_score || '—') + ' / 65');
+        row('Time Frame', d.client2_time_frame);
+        row('% of Total Assets', d.client2_asset_pct);
+        y += 2;
+
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(204, 24, 36);
+        doc.text('RISK ASSESSMENT ANSWERS', ml, y);
+        doc.setTextColor(51, 51, 51);
+        y += 6;
+
+        QS.forEach((q, i) => {
+          row(`Q${i+1} — ${Q_LABELS[i]}`, d[`c2_${q}`]);
+        });
+        y += 2;
+
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(204, 24, 36);
+        doc.text('DISCLOSURES', ml, y);
+        doc.setTextColor(51, 51, 51);
+        y += 6;
+
+        row('Leverage restriction', d.c2_leverage);
+        row('Listed company director', d.c2_director);
+        row('SFC employee', d.c2_sfc);
+        row('Family member involved', d.c2_family);
+        row('Derivatives knowledge', d.c2_derivatives);
+        row('Virtual assets knowledge', d.c2_virtual);
+        y += 4;
+
+        if (d.c2_signature) {
+          checkPage(35);
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(204, 24, 36);
+          doc.text('CLIENT 2 SIGNATURE', ml, y);
+          doc.setTextColor(51, 51, 51);
+          y += 4;
+          try { doc.addImage(d.c2_signature, 'PNG', ml, y, 70, 22); } catch(e) {}
+          y += 26;
+        }
+      }
+
+      // ── Advisor Signature ──
+      checkPage(40);
+      heading('Advisor Signature');
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text('I confirm I have reviewed this Investor Risk Profile with the client(s) named above.', ml, y);
+      y += 8;
+      try { doc.addImage(advisorSigData, 'PNG', ml, y, 80, 26); } catch(e) {}
+      y += 30;
+      doc.setFontSize(8);
+      doc.setTextColor(170, 170, 170);
+      doc.text('Signed: ' + new Date().toLocaleDateString(), ml, y);
+
+      // ── Footer ──
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(7);
+        doc.setTextColor(180, 180, 180);
+        doc.text(
+          'Leo Wealth — Confidential — Page ' + i + ' of ' + pageCount,
+          pw / 2, ph - 8, { align: 'center' }
+        );
+      }
+
+      // Save
+      const filename = `IRP_${(d.client1_name || 'client').replace(/\s+/g,'_')}_${d.submission_date || 'undated'}.pdf`;
+      doc.save(filename);
+
+      btn.textContent = 'PDF Downloaded';
+
+    } catch (err) {
+      console.error(err);
+      btn.textContent = 'Sign & Download PDF';
+      btn.disabled = false;
+      alert('Error generating PDF: ' + err.message);
+    }
+  }
+
+  loadSubmission();
+</script>
+
+</body>
+</html>
