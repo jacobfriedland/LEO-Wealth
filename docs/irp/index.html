@@ -664,21 +664,6 @@
       const submissionId = sbData[0]?.id || 'unknown';
       const reviewLink = `https://jacobfriedland.github.io/LEO-Wealth/irp/review/?id=${submissionId}`;
 
-      // Plain text client2 section for EmailJS (avoids HTML escaping issues)
-      let c2Text = 'Single client submission — no Client 2.';
-      if (client2Active) {
-        c2Text = [
-          `CLIENT 2: ${data.client2_name}`,
-          `Score: ${data.client2_score}/65 — ${data.client2_profile} Investor`,
-          `Time Frame: ${data.client2_time_frame} | Assets: ${data.client2_asset_pct}`,
-          '',
-          ...QS.map((q,i) => `Q${i+1}: ${data[`c2_${q}`]}`),
-          '',
-          `Leverage: ${data.c2_leverage} | Director: ${data.c2_director} | SFC: ${data.c2_sfc}`,
-          `Family: ${data.c2_family} | Derivatives: ${data.c2_derivatives} | Virtual Assets: ${data.c2_virtual}`
-        ].join('\n');
-      }
-
       await emailjs.send('service_hg3i0ik', 'template_qv7x5rc', {
         advisor_email: advisorEmail,
         submission_date: data.submission_date,
@@ -690,7 +675,14 @@
         c1_q9:data.c1_q9, c1_q10:data.c1_q10, c1_q11:data.c1_q11, c1_q12:data.c1_q12, c1_q13:data.c1_q13,
         c1_leverage:data.c1_leverage, c1_director:data.c1_director, c1_sfc:data.c1_sfc,
         c1_family:data.c1_family, c1_derivatives:data.c1_derivatives, c1_virtual:data.c1_virtual,
-        client2_section: c2Text,
+        client2_name:data.client2_name||'', client2_time_frame:data.client2_time_frame||'',
+        client2_asset_pct:data.client2_asset_pct||'', client2_score:data.client2_score||'',
+        client2_profile:data.client2_profile||'',
+        c2_q1:data.c2_q1||'', c2_q2:data.c2_q2||'', c2_q3:data.c2_q3||'', c2_q4:data.c2_q4||'',
+        c2_q5:data.c2_q5||'', c2_q6:data.c2_q6||'', c2_q7:data.c2_q7||'', c2_q8:data.c2_q8||'',
+        c2_q9:data.c2_q9||'', c2_q10:data.c2_q10||'', c2_q11:data.c2_q11||'', c2_q12:data.c2_q12||'', c2_q13:data.c2_q13||'',
+        c2_leverage:data.c2_leverage||'', c2_director:data.c2_director||'', c2_sfc:data.c2_sfc||'',
+        c2_family:data.c2_family||'', c2_derivatives:data.c2_derivatives||'', c2_virtual:data.c2_virtual||'',
         review_link: reviewLink
       });
 
