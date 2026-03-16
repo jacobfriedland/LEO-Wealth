@@ -602,7 +602,13 @@
 
   document.querySelectorAll('input[data-s]').forEach(i => i.addEventListener('change', () => { calcAndDisplay('c1'); if(client2Active) calcAndDisplay('c2'); }));
 
-  function toggle(id, value) { const el=document.getElementById(id); if(el) el.classList.toggle('show', value==='Yes'); }
+  function toggle(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const show = value === 'Yes';
+    el.classList.toggle('show', show);
+    el.style.display = show ? 'block' : 'none';
+  }
 
   function ans(name) { const el=document.querySelector(`input[name="${name}"]:checked`); if(!el) return '—'; return el.closest('label')?.textContent?.trim()||el.value; }
 
