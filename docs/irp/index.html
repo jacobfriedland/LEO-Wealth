@@ -640,6 +640,10 @@
         c1_q9:ans('c1_q9'), c1_q10:ans('c1_q10'), c1_q11:ans('c1_q11'), c1_q12:ans('c1_q12'), c1_q13:ans('c1_q13'),
         c1_leverage:ans('c1_leverage'), c1_director:ans('c1_director'), c1_sfc:ans('c1_sfc'),
         c1_family:ans('c1_family'), c1_derivatives:ans('c1_derivatives'), c1_virtual:ans('c1_virtual'),
+        c1_listed_company: document.querySelector('input[name="c1_listed_company"]')?.value||'',
+        c1_family_details: document.querySelector('input[name="c1_family_details"]')?.value||'',
+        c1_deriv_source: [...document.querySelectorAll('input[name="c1_deriv_source"]:checked')].map(x=>x.value).join(', ')||'',
+        c1_virtual_source: [...document.querySelectorAll('input[name="c1_virtual_source"]:checked')].map(x=>x.value).join(', ')||'',
         c1_signature: c1SigPad.toDataURL(),
         status: 'pending'
       };
@@ -651,6 +655,10 @@
         QS.forEach(q => { data[`c2_${q}`] = ans(`c2_${q}`); });
         data.c2_leverage=ans('c2_leverage'); data.c2_director=ans('c2_director'); data.c2_sfc=ans('c2_sfc');
         data.c2_family=ans('c2_family'); data.c2_derivatives=ans('c2_derivatives'); data.c2_virtual=ans('c2_virtual');
+        data.c2_listed_company = document.querySelector('input[name="c2_listed_company"]')?.value||'';
+        data.c2_family_details = document.querySelector('input[name="c2_family_details"]')?.value||'';
+        data.c2_deriv_source = [...document.querySelectorAll('input[name="c2_deriv_source"]:checked')].map(x=>x.value).join(', ')||'';
+        data.c2_virtual_source = [...document.querySelectorAll('input[name="c2_virtual_source"]:checked')].map(x=>x.value).join(', ')||'';
         data.c2_signature = c2SigPad.toDataURL();
       }
 
@@ -664,25 +672,12 @@
       const submissionId = sbData[0]?.id || 'unknown';
       const reviewLink = `https://jacobfriedland.github.io/LEO-Wealth/irp/review/?id=${submissionId}`;
 
+      const client2Line = client2Active ? `\nClient 2: ${data.client2_name}` : '';
       await emailjs.send('service_hg3i0ik', 'template_qv7x5rc', {
         advisor_email: advisorEmail,
         submission_date: data.submission_date,
         client1_name: data.client1_name,
-        client1_time_frame: data.client1_time_frame, client1_asset_pct: data.client1_asset_pct,
-        client1_score: data.client1_score, client1_profile: data.client1_profile,
-        c1_q1:data.c1_q1, c1_q2:data.c1_q2, c1_q3:data.c1_q3, c1_q4:data.c1_q4,
-        c1_q5:data.c1_q5, c1_q6:data.c1_q6, c1_q7:data.c1_q7, c1_q8:data.c1_q8,
-        c1_q9:data.c1_q9, c1_q10:data.c1_q10, c1_q11:data.c1_q11, c1_q12:data.c1_q12, c1_q13:data.c1_q13,
-        c1_leverage:data.c1_leverage, c1_director:data.c1_director, c1_sfc:data.c1_sfc,
-        c1_family:data.c1_family, c1_derivatives:data.c1_derivatives, c1_virtual:data.c1_virtual,
-        client2_name:data.client2_name||'', client2_time_frame:data.client2_time_frame||'',
-        client2_asset_pct:data.client2_asset_pct||'', client2_score:data.client2_score||'',
-        client2_profile:data.client2_profile||'',
-        c2_q1:data.c2_q1||'', c2_q2:data.c2_q2||'', c2_q3:data.c2_q3||'', c2_q4:data.c2_q4||'',
-        c2_q5:data.c2_q5||'', c2_q6:data.c2_q6||'', c2_q7:data.c2_q7||'', c2_q8:data.c2_q8||'',
-        c2_q9:data.c2_q9||'', c2_q10:data.c2_q10||'', c2_q11:data.c2_q11||'', c2_q12:data.c2_q12||'', c2_q13:data.c2_q13||'',
-        c2_leverage:data.c2_leverage||'', c2_director:data.c2_director||'', c2_sfc:data.c2_sfc||'',
-        c2_family:data.c2_family||'', c2_derivatives:data.c2_derivatives||'', c2_virtual:data.c2_virtual||'',
+        client2_line: client2Line,
         review_link: reviewLink
       });
 

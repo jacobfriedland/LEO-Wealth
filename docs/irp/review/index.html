@@ -433,13 +433,23 @@
         qaTable(QS.map((q, i) => [`Q${i+1} — ${Q_LABELS[i]}`, submission[`${prefix}_${q}`] || '—']));
 
         sectionLabel('DISCLOSURES');
+        const p = prefix;
+        const dirVal = submission[`${p}_director`] === 'Yes'
+          ? `Yes — ${submission[`${p}_listed_company`] || ''}` : (submission[`${p}_director`] || '—');
+        const sfcVal = submission[`${p}_sfc`] || '—';
+        const famVal = submission[`${p}_family`] === 'Yes'
+          ? `Yes — ${submission[`${p}_family_details`] || ''}` : (submission[`${p}_family`] || '—');
+        const derivVal = submission[`${p}_derivatives`] === 'Yes'
+          ? `Yes — ${submission[`${p}_deriv_source`] || ''}` : (submission[`${p}_derivatives`] || '—');
+        const virtVal = submission[`${p}_virtual`] === 'Yes'
+          ? `Yes — ${submission[`${p}_virtual_source`] || ''}` : (submission[`${p}_virtual`] || '—');
         infoTable([
-          ['Leverage restriction',      submission[`${prefix}_leverage`]    || '—'],
-          ['Listed company director',   submission[`${prefix}_director`]   || '—'],
-          ['SFC employee',              submission[`${prefix}_sfc`]        || '—'],
-          ['Family member involved',    submission[`${prefix}_family`]     || '—'],
-          ['Derivatives knowledge',     submission[`${prefix}_derivatives`]|| '—'],
-          ['Virtual assets knowledge',  submission[`${prefix}_virtual`]    || '—']
+          ['Leverage restriction',      submission[`${p}_leverage`] || '—'],
+          ['Listed company director',   dirVal],
+          ['SFC employee',              sfcVal],
+          ['Family member involved',    famVal],
+          ['Derivatives knowledge',     derivVal],
+          ['Virtual assets knowledge',  virtVal]
         ]);
 
         if (sigData) {
